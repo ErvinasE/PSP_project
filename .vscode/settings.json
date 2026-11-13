@@ -1,0 +1,7 @@
+{
+  "editor.formatOnSave": true,
+  "java.configuration.updateBuildConfiguration": "automatic",
+  "java.saveActions.organizeImports": true,
+  "files.eol": "\n",
+  "java.checkstyle.configuration": "${workspaceFolder}/config/checkstyle/checkstyle.xml"
+}

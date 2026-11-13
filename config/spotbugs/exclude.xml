@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  SpotBugs exclusion filter. Intentionally empty.
+  Any future exclusion must be narrow (one class + one bug pattern) and carry an XML comment
+  explaining why it is a false positive.
+-->
+<FindBugsFilter/>

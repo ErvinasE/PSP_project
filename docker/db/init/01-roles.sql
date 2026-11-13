@@ -1,0 +1,16 @@
+-- Local development roles. Passwords are dev-only defaults.
+CREATE ROLE psp_owner LOGIN PASSWORD 'psp_owner' NOSUPERUSER NOCREATEDB NOCREATEROLE;
+CREATE ROLE psp_app   LOGIN PASSWORD 'psp_app'   NOSUPERUSER NOCREATEDB NOCREATEROLE NOBYPASSRLS;
+
+GRANT CONNECT ON DATABASE psp TO psp_owner, psp_app;
+
+CREATE SCHEMA psp AUTHORIZATION psp_owner;
+GRANT USAGE ON SCHEMA psp TO psp_app;
+
+ALTER DEFAULT PRIVILEGES FOR ROLE psp_owner IN SCHEMA psp
+    GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO psp_app;
+ALTER DEFAULT PRIVILEGES FOR ROLE psp_owner IN SCHEMA psp
+    GRANT USAGE, SELECT ON SEQUENCES TO psp_app;
+
+ALTER ROLE psp_owner SET search_path = psp;
+ALTER ROLE psp_app   SET search_path = psp;

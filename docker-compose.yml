@@ -1,0 +1,34 @@
+services:
+  db:
+    image: postgres:17
+    environment:
+      POSTGRES_DB: psp
+      POSTGRES_USER: psp_admin
+      POSTGRES_PASSWORD: psp_admin
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./docker/db/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U psp_admin -d psp"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  api:
+    build: .
+    environment:
+      DB_URL: jdbc:postgresql://db:5432/psp?currentSchema=psp
+      DB_APP_USER: psp_app
+      DB_APP_PASSWORD: psp_app
+      DB_OWNER_USER: psp_owner
+      DB_OWNER_PASSWORD: psp_owner
+    ports:
+      - "8080:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  pgdata:
