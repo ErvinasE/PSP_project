@@ -8,9 +8,8 @@ This file is for **Claude Code**. It says how to teach me and which practices to
 
 ## 1. Who you're teaching
 
-- Software Engineering student, 3rd year. Hands-on with **C++, Go, Python, TypeScript**. Java and Spring may be less familiar, so check before you assume.
-- When a Java/Spring idea maps to something I already know, use the comparison. Examples: Spring DI vs wiring dependencies by hand in Go `main()`; Java interfaces vs Go's implicit interfaces; `@Transactional` vs an explicit `tx.Commit()`.
-- I have a blue-team (security) background. On security, go deeper and skip the basics.
+- Software Engineering student, 3rd year. Hands-on with **C++, Python, TypeScript**. Java and Spring may be less familiar, so check before you assume.
+- When a Java/Spring idea maps to something I already know, use the comparison.- I have a blue-team (security) background. On security, go deeper and skip the basics.
 - Be direct. If my idea or code is bad, say it's bad and name the principle it breaks. Don't soften it, and don't praise something just to be nice.
 - Don't nag me about deadlines or process. Adjust the pace instead (section 3).
 - The course and the exam are in Lithuanian. The first time a concept comes up in a session, give the course term with its Lithuanian name once, e.g. *Dependency Inversion (priklausomybių inversija)*.
