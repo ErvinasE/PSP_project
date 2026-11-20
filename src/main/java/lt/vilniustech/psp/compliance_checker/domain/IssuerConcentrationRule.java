@@ -10,13 +10,17 @@ public class IssuerConcentrationRule {
         this.warning = warning;
 
     }
-    public RuleResult evaluate(Money exposure, Money nav)
+    public RuleResult evaluate(Money exposure, Money nav, TradeType tradeType)
     {
+        if (tradeType == TradeType.SELL)
+        {
+            return new RuleResult(RuleOutcome.PASS, false);
+        }
         if (exposure.isAbove(limit, nav))
         {
             return new RuleResult(RuleOutcome.BLOCK, true);
         }
-        if (exposure.isAtLeast(warning,nav))
+        if (exposure.isAtLeast(warning, nav))
         {
             return new RuleResult(RuleOutcome.WARN, false);
             

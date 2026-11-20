@@ -48,10 +48,10 @@ Every user belongs to exactly one firm (tenant) and can see only that firm's dat
 
 **Logic to be designed and tested:** (1) building the hypothetical post-trade portfolio from the snapshot, the pending orders and the new order; (2) summing exposure per issuer across all instruments of that issuer; (3) evaluating independent rules, each returning PASS, WARN or BLOCK with its numbers; (4) combining the results into one decision; (5) failing closed when data is missing; (6) evaluating orders of one portfolio strictly one after another, also under concurrent requests; (7) storing the inputs used so that the decision can be replayed.
 
-**Input:** the order (portfolio, instrument, side, quantity). Tenant and user come from the token; the price comes from the snapshot, never from the client. Example, with the state of portfolio P1 used in all examples below: NAV €100,000,000; cash €10,000,000 (10%); issuer X exposure €8,500,000 = 8.50% (60,000 X-EQ shares at €100 plus 2,500 X-BOND units at €1,000); active rule-set v3: issuer limit 10%, warning from 9%, cash floor 2%, restricted list {R-EQ}.
+**Input:** the order (portfolio, instrument, trade type, quantity). Tenant and user come from the token; the price comes from the snapshot, never from the client. Example, with the state of portfolio P1 used in all examples below: NAV €100,000,000; cash €10,000,000 (10%); issuer X exposure €8,500,000 = 8.50% (60,000 X-EQ shares at €100 plus 2,500 X-BOND units at €1,000); active rule-set v3: issuer limit 10%, warning from 9%, cash floor 2%, restricted list {R-EQ}.
 
 ```json
-{ "portfolio_id": "P1", "instrument": "X-EQ", "side": "BUY", "quantity": 10000 }
+{ "portfolio_id": "P1", "instrument": "X-EQ", "trade_type": "BUY", "quantity": 10000 }
 ```
 
 **Output:** a decision record with one result per rule. Example for the order above (value €1,000,000):
