@@ -7,11 +7,26 @@ Base package: `lt.vilniustech.psp.compliance_checker`
 Stack: Java 21, Spring Boot 4.1, Maven wrapper, PostgreSQL 17, Flyway, Testcontainers, JUnit 5 + AssertJ, Checkstyle, SpotBugs.
 Commands: `./mvnw verify` (tests + Checkstyle + SpotBugs; Docker must be running), `docker compose up --build` (whole system).
 
+## Prototype scope (stage II)
+The design doc stays unchanged. For the prototype, do NOT build the items below; they are deferred to stage III. List them in the README under "Deferred to stage III".
+- Login, tokens and the 3 roles (tenant comes from a fixed per-firm API key instead)
+- F2 batch check
+- F3 rule-set versions (seed one fixed rule-set: issuer limit 10%, warning 9%, cash floor 2%)
+- F4 override approval
+- F5 decision log, hash chain, verification and replay
+- Concurrency test (SCA-3), k6 load tests, multiple replicas
+- Caching, pre-aggregated exposures, bounded batch executor
+- Seed generator for 1,000 portfolios (use one SQL seed: Firm A and Firm B with the P1 data from the design doc)
+- Row-level security (tenant isolation is enforced by tenant_id filtering in every query)
+- Restricted list rule (rule 2) and cash floor rule (rule 4)
+
+Build for the prototype: rule 1 (data completeness, the error case), rule 3 (done), the combiner, pending orders (scenario 4, the conflict case), tables with tenant_id plus the seed, one `POST /orders/check` endpoint, a tenant isolation test, and the README.
+
 ## Rules
 - Money is `long` cents, limits are basis points. No float/double in compliance logic.
-- Every query is scoped by tenant_id. Tenant and role come only from the token.
+- Every query is scoped by tenant_id. Tenant comes only from the server-side lookup of the request's API key (stage II); never from the request body or a client-supplied tenant header. Tokens and roles come in stage III.
 - Database roles: Flyway runs as `psp_owner`, the app connects as `psp_app` (not superuser, not owner, no BYPASSRLS). Never make the app connect as owner or superuser.
-- Every new table holding tenant data gets, in the same migration: a `tenant_id` column, `ENABLE ROW LEVEL SECURITY`, `FORCE ROW LEVEL SECURITY`, and a tenant policy.
+- Every new table holding tenant data gets a `tenant_id` column, and every query on it filters by tenant_id. Row-level security is deferred to stage III (see Prototype scope).
 - Each compliance rule is its own class behind `ComplianceRule`. Adding a rule must not change the engine.
 - Engine unit tests run in memory only. DB tests use Testcontainers.
 - Never change a test's expected values to make it pass.

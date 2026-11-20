@@ -15,7 +15,6 @@ public final class BasisPoints {
         }
         this.value = value;
     }
-
     // public static BasisPoints ofPercent(int percent)
     // {
     //     return new BasisPoints(percent * 100);
