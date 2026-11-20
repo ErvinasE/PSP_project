@@ -1,6 +1,6 @@
 package lt.vilniustech.psp.compliance_checker.domain;
 
-public class IssuerConcentrationRule {
+public class IssuerConcentrationRule implements ComplianceRule {
     private final BasisPoints limit;
     private final BasisPoints warning;
 
@@ -10,23 +10,22 @@ public class IssuerConcentrationRule {
         this.warning = warning;
 
     }
-    public RuleResult evaluate(Money exposure, Money nav, TradeType tradeType)
+    @Override
+    public RuleResult evaluate(PostTradeState state)
     {
-        if (tradeType == TradeType.SELL)
+        if (state.tradeType() == TradeType.SELL)
         {
             return new RuleResult(RuleOutcome.PASS, false);
         }
-        if (exposure.isAbove(limit, nav))
+        if (state.issuerExposure().isAbove(limit, state.nav()))
         {
             return new RuleResult(RuleOutcome.BLOCK, true);
         }
-        if (exposure.isAtLeast(warning, nav))
+        if (state.issuerExposure().isAtLeast(warning, state.nav()))
         {
             return new RuleResult(RuleOutcome.WARN, false);
             
         }
         return new RuleResult(RuleOutcome.PASS, false);
-
-
     }
 }
