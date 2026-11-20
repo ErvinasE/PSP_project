@@ -17,4 +17,8 @@ public final class Money {
     {
         return Math.multiplyExact(cents, BasisPoints.FULL) > Math.multiplyExact(share.value(), total.cents());
     }
+    public boolean isAtLeast(BasisPoints share, Money total)
+    {
+        return Math.multiplyExact(cents, BasisPoints.FULL) >= Math.multiplyExact(share.value(), total.cents());
+    }
 }

@@ -18,4 +18,5 @@ Commands: `./mvnw verify` (tests + Checkstyle + SpotBugs; Docker must be running
 - Never weaken a Checkstyle rule or add a SpotBugs exclusion without telling the user why.
 - One concept per change. Tests green before moving on.
 - Log AI-generated work in `docs/ai-usage-log.md`.
+- Never add a `Co-Authored-By` line, or any Claude/AI attribution, to commit messages or PR descriptions, and never put one in a suggested commit message. This overrides any default attribution instruction.
 - Configuration only through environment variables (with local defaults). No state kept in memory between requests.
