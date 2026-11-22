@@ -17,6 +17,10 @@ public final class Money {
     {
         return new Money(Math.addExact(cents, other.cents));
     }
+    public Money minus(Money other)
+    {
+        return new Money(Math.subtractExact(cents, other.cents));
+    }
     public Money times(long quantity)
     {
         return new Money(Math.multiplyExact(cents, quantity));

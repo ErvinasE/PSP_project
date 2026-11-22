@@ -22,6 +22,13 @@ The design doc stays unchanged. For the prototype, do NOT build the items below;
 
 Build for the prototype: rule 1 (data completeness, the error case), rule 3 (done), the combiner, pending orders (scenario 4, the conflict case), tables with tenant_id plus the seed, one `POST /orders/check` endpoint, a tenant isolation test, and the README.
 
+Prototype shortcuts (keep it simple to explain at the defence; list them in the README too):
+- No separate post-trade calculator: one `ComplianceEngine` runs the whole flow (data check → post-trade exposure from snapshot + pending orders + this order → rules → combiner).
+- Persistence with plain SQL through `JdbcTemplate`, no JPA entities or repositories. Every query shows `WHERE tenant_id = ?` explicitly.
+- Five tables, all with `tenant_id`: `firms` (api_key), `portfolios` (cash), `instruments` (code, issuer, price), `holdings`, `pending_orders`.
+- No Spring Security: the controller reads the `X-API-Key` header and looks up the firm server-side; an unknown or missing key gets 401.
+- The response lists the decision plus each rule's name and outcome, without percentages.
+
 ## Rules
 - Money is `long` cents, limits are basis points. No float/double in compliance logic.
 - Every query is scoped by tenant_id. Tenant comes only from the server-side lookup of the request's API key (stage II); never from the request body or a client-supplied tenant header. Tokens and roles come in stage III.

@@ -1,16 +1,17 @@
 package lt.vilniustech.psp.compliance_checker.domain;
 
 import java.util.Map;
-import java.util.Set;
 
 public final class PortfolioSnapshot {
-    private final Set<String> knownInstruments;
+    private final Map<String, String> instrumentIssuers;
     private final Map<String, Money> prices;
-    private final Money cash;
     private final Map<String, Long> holdings;
-    public PortfolioSnapshot(Set<String> knownInstruments, Map<String, Money> prices, Map<String, Long> holdings, Money cash)
+    private final Money cash;
+
+    public PortfolioSnapshot(Map<String, String> instrumentIssuers, Map<String, Money> prices,
+                             Map<String, Long> holdings, Money cash)
     {
-        this.knownInstruments = Set.copyOf(knownInstruments);
+        this.instrumentIssuers = Map.copyOf(instrumentIssuers);
         this.prices = Map.copyOf(prices);
         this.holdings = Map.copyOf(holdings);
         this.cash = cash;
@@ -18,9 +19,9 @@ public final class PortfolioSnapshot {
 
     public boolean isKnown(String instrument)
     {
-        return knownInstruments.contains(instrument);
+        return instrumentIssuers.containsKey(instrument);
     }
-    
+
     public boolean hasPrice(String instrument)
     {
         return prices.containsKey(instrument);
@@ -38,6 +39,16 @@ public final class PortfolioSnapshot {
         return true;
     }
 
+    public String issuerOf(String instrument)
+    {
+        String issuer = instrumentIssuers.get(instrument);
+        if (issuer == null)
+        {
+            throw new IllegalStateException("unknown instrument " + instrument + "; run DataCompletenessCheck first");
+        }
+        return issuer;
+    }
+
     public Money nav()
     {
         Money total = cash;
@@ -48,7 +59,20 @@ public final class PortfolioSnapshot {
         return total;
     }
 
-    private Money valueAtSnapshotPrice(String instrument, long quantity)
+    public Money issuerExposure(String issuer)
+    {
+        Money total = new Money(0L);
+        for (Map.Entry<String, Long> holding : holdings.entrySet())
+        {
+            if (issuerOf(holding.getKey()).equals(issuer))
+            {
+                total = total.plus(valueAtSnapshotPrice(holding.getKey(), holding.getValue()));
+            }
+        }
+        return total;
+    }
+
+    public Money valueAtSnapshotPrice(String instrument, long quantity)
     {
         Money price = prices.get(instrument);
         if (price == null)
