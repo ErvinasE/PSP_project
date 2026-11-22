@@ -30,4 +30,25 @@ class MoneyTest {
 
         assertThat(above).isFalse();
     }
+
+    @Test
+    void plusAddsTheCents()
+    {
+        Money cash = new Money(1_000L);
+        Money holding = new Money(1_500L);
+
+        Money total = cash.plus(holding);
+
+        assertThat(total.cents()).isEqualTo(2_500L);
+    }
+
+    @Test
+    void timesMultipliesThePriceByAQuantity()
+    {
+        Money price = new Money(500L); // EUR 5.00 per unit
+
+        Money value = price.times(3L);
+
+        assertThat(value.cents()).isEqualTo(1_500L);
+    }
 }

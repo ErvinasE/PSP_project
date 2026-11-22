@@ -37,4 +37,24 @@ public final class PortfolioSnapshot {
         }
         return true;
     }
+
+    public Money nav()
+    {
+        Money total = cash;
+        for (Map.Entry<String, Long> holding : holdings.entrySet())
+        {
+            total = total.plus(valueAtSnapshotPrice(holding.getKey(), holding.getValue()));
+        }
+        return total;
+    }
+
+    private Money valueAtSnapshotPrice(String instrument, long quantity)
+    {
+        Money price = prices.get(instrument);
+        if (price == null)
+        {
+            throw new IllegalStateException("no price for " + instrument + "; run DataCompletenessCheck first");
+        }
+        return price.times(quantity);
+    }
 }
