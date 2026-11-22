@@ -16,7 +16,7 @@ import org.testcontainers.utility.MountableFile;
  * tenant-isolation tests would pass even with broken row-level security.
  */
 @TestConfiguration(proxyBeanMethods = false)
-class TestcontainersConfiguration {
+public class TestcontainersConfiguration {
 
 	private static final String SCHEMA_PARAM = "currentSchema=psp";
 

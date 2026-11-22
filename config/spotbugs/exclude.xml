@@ -1,7 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  SpotBugs exclusion filter. Intentionally empty.
-  Any future exclusion must be narrow (one class + one bug pattern) and carry an XML comment
+  SpotBugs exclusion filter.
+  Any exclusion must be narrow (one class + one bug pattern) and carry an XML comment
   explaining why it is a false positive.
 -->
-<FindBugsFilter/>
+<FindBugsFilter>
+    <!--
+      EI_EXPOSE_REP2 on the constructor: PortfolioRepository stores the JdbcTemplate it is given.
+      JdbcTemplate is a Spring singleton that is meant to be shared (constructor injection); it holds
+      no portfolio data, and a defensive copy would defeat the point of injecting it.
+    -->
+    <Match>
+        <Class name="lt.vilniustech.psp.compliance_checker.persistence.PortfolioRepository"/>
+        <Bug pattern="EI_EXPOSE_REP2"/>
+    </Match>
+</FindBugsFilter>
