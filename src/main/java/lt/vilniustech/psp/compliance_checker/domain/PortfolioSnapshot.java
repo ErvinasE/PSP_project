@@ -6,28 +6,29 @@ import java.util.Set;
 public final class PortfolioSnapshot {
     private final Set<String> knownInstruments;
     private final Map<String, Money> prices;
-    private final Set<String> heldInstruments;
-
-    public PortfolioSnapshot(Set<String> knownInstruments, Map<String, Money> prices, Set<String> heldInstruments)
+    private final Money cash;
+    private final Map<String, Long> holdings;
+    public PortfolioSnapshot(Set<String> knownInstruments, Map<String, Money> prices, Map<String, Long> holdings, Money cash)
     {
         this.knownInstruments = Set.copyOf(knownInstruments);
         this.prices = Map.copyOf(prices);
-        this.heldInstruments = Set.copyOf(heldInstruments);
+        this.holdings = Map.copyOf(holdings);
+        this.cash = cash;
     }
 
     public boolean isKnown(String instrument)
     {
         return knownInstruments.contains(instrument);
     }
-
+    
     public boolean hasPrice(String instrument)
     {
         return prices.containsKey(instrument);
     }
 
-    public boolean allHeldInstrumentsHavePrices()
+    public boolean allHoldingsHavePrices()
     {
-        for (String held : heldInstruments)
+        for (String held : holdings.keySet())
         {
             if (!hasPrice(held))
             {

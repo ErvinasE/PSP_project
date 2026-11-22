@@ -11,7 +11,7 @@ public class DataCompletenessCheck {
         {
             return new RuleResult(RuleOutcome.BLOCK, false);
         }
-        if (!snapshot.allHeldInstrumentsHavePrices())
+        if (!snapshot.allHoldingsHavePrices())
         {
             return new RuleResult(RuleOutcome.BLOCK, false);
         }
