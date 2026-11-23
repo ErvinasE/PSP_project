@@ -43,6 +43,15 @@ class FirmRepositoryIntegrationTest {
     }
 
     @Test
+    void missingKeyFindsNoFirm()
+    {
+        // A request without the X-API-Key header arrives here as null
+        Optional<String> tenantId = firms.findTenantId(null);
+
+        assertThat(tenantId).isEmpty();
+    }
+
+    @Test
     void theStoredHashIsNotAValidKey()
     {
         // A stolen copy of the firms table contains this hash. Sent as a key, it gets hashed again

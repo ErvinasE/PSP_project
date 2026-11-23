@@ -19,6 +19,7 @@ The design doc stays unchanged. For the prototype, do NOT build the items below;
 - Seed generator for 1,000 portfolios (use one SQL seed: Firm A and Firm B with the P1 data from the design doc)
 - Row-level security (tenant isolation is enforced by tenant_id filtering in every query)
 - Restricted list rule (rule 2) and cash floor rule (rule 4)
+- Reasons in the response (name and outcome of each rule); the prototype returns the decision only
 
 Build for the prototype: rule 1 (data completeness, the error case), rule 3 (done), the combiner, pending orders (scenario 4, the conflict case), tables with tenant_id plus the seed, one `POST /orders/check` endpoint, a tenant isolation test, and the README.
 
@@ -27,7 +28,7 @@ Prototype shortcuts (keep it simple to explain at the defence; list them in the 
 - Persistence with plain SQL through `JdbcTemplate`, no JPA entities or repositories. Every query shows `WHERE tenant_id = ?` explicitly.
 - Five tables, all with `tenant_id`: `firms` (api_key), `portfolios` (cash), `instruments` (code, issuer, price), `holdings`, `pending_orders`.
 - No Spring Security: the controller reads the `X-API-Key` header and looks up the firm server-side; an unknown or missing key gets 401.
-- The response lists the decision plus each rule's name and outcome, without percentages.
+- The response returns only the decision (ALLOW / WARN / BLOCK). Each rule's name and outcome in the response is deferred (decided 2026-11-23): the engine would have to return a result object instead of a Decision. Say so in the README.
 
 ## Rules
 - Money is `long` cents, limits are basis points. No float/double in compliance logic.

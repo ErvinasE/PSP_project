@@ -20,9 +20,13 @@ public class FirmRepository {
         this.jdbc = jdbc;
     }
 
-    /** Empty when no firm has this key (the controller turns that into 401). */
+    /** Empty when the key is missing or no firm has it (the controller turns that into 401). */
     public Optional<String> findTenantId(String apiKey)
     {
+        if (apiKey == null)
+        {
+            return Optional.empty();
+        }
         String keyHash = ApiKeyHasher.hash(apiKey);
         List<String> tenantRows = jdbc.queryForList(
             "SELECT tenant_id FROM firms WHERE api_key_hash = ?",
