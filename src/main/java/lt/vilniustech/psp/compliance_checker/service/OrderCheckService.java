@@ -1,6 +1,11 @@
 package lt.vilniustech.psp.compliance_checker.service;
 
+import java.util.List;
+import java.util.Optional;
 import lt.vilniustech.psp.compliance_checker.domain.ComplianceEngine;
+import lt.vilniustech.psp.compliance_checker.domain.Decision;
+import lt.vilniustech.psp.compliance_checker.domain.Order;
+import lt.vilniustech.psp.compliance_checker.domain.PortfolioSnapshot;
 import lt.vilniustech.psp.compliance_checker.persistence.PendingOrderRepository;
 import lt.vilniustech.psp.compliance_checker.persistence.PortfolioRepository;
 import org.springframework.stereotype.Service;
@@ -25,5 +30,29 @@ public class OrderCheckService {
         this.portfolios = portfolios;
         this.pendingOrders = pendingOrders;
         this.engine = engine;
+    }
+
+    /** Empty when this tenant has no such portfolio (the controller turns that into 404). */
+    public Optional<Decision> check(String tenantId, String portfolioId, Order order)
+    {
+        // 1. The portfolio as it is now. No portfolio for this tenant = nothing to check.
+        Optional<PortfolioSnapshot> snapshot = portfolios.loadSnapshot(tenantId, portfolioId);
+        if (snapshot.isEmpty())
+        {
+            return Optional.empty();
+        }
+
+        // 2. Orders accepted earlier but not executed yet
+        List<Order> pending = pendingOrders.loadPendingOrders(tenantId, portfolioId);
+
+        // 3. The decision: snapshot + pending + this order
+        Decision decision = engine.check(order, snapshot.get(), pending);
+
+        // 4. Only an accepted order becomes pending. A BLOCKed order will never execute.
+        if (decision == Decision.ALLOW || decision == Decision.WARN)
+        {
+            pendingOrders.save(tenantId, portfolioId, order);
+        }
+        return Optional.of(decision);
     }
 }
