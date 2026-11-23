@@ -1,6 +1,5 @@
 package lt.vilniustech.psp.compliance_checker.persistence;
 
-import java.sql.ResultSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -8,6 +7,7 @@ import java.util.Optional;
 import lt.vilniustech.psp.compliance_checker.domain.Money;
 import lt.vilniustech.psp.compliance_checker.domain.PortfolioSnapshot;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Repository;
 
 /**
@@ -39,27 +39,29 @@ public class PortfolioRepository {
         // 2. The tenant's reference data: issuer of every known instrument, and its price if it has one.
         Map<String, String> instrumentIssuers = new HashMap<>();
         Map<String, Money> prices = new HashMap<>();
-        jdbc.query(
+        SqlRowSet instrumentRows = jdbc.queryForRowSet(
             "SELECT code, issuer, price_cents FROM instruments WHERE tenant_id = ?",
-            (ResultSet row) -> {
-                String code = row.getString("code");
-                instrumentIssuers.put(code, row.getString("issuer"));
-                long priceCents = row.getLong("price_cents");
-                if (!row.wasNull())
-                {
-                    prices.put(code, new Money(priceCents));
-                }
-            },
             tenantId);
+        while (instrumentRows.next())
+        {
+            String code = instrumentRows.getString("code");
+            instrumentIssuers.put(code, instrumentRows.getString("issuer"));
+            long priceCents = instrumentRows.getLong("price_cents");
+            if (!instrumentRows.wasNull())
+            {
+                prices.put(code, new Money(priceCents));
+            }
+        }
 
         // 3. What this portfolio holds.
         Map<String, Long> holdings = new HashMap<>();
-        jdbc.query(
+        SqlRowSet holdingRows = jdbc.queryForRowSet(
             "SELECT instrument, quantity FROM holdings WHERE tenant_id = ? AND portfolio_id = ?",
-            (ResultSet row) -> {
-                holdings.put(row.getString("instrument"), row.getLong("quantity"));
-            },
             tenantId, portfolioId);
+        while (holdingRows.next())
+        {
+            holdings.put(holdingRows.getString("instrument"), holdingRows.getLong("quantity"));
+        }
 
         return Optional.of(new PortfolioSnapshot(instrumentIssuers, prices, holdings, new Money(cash.get(0))));
     }
