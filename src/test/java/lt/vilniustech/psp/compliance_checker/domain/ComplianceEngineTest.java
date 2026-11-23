@@ -3,7 +3,6 @@ package lt.vilniustech.psp.compliance_checker.domain;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
 
@@ -47,83 +46,6 @@ class ComplianceEngineTest {
         return new IssuerConcentrationRule(LIMIT, WARNING);
     }
 
-    // ---- Learning aid: prints the numbers behind a decision. Remove before committing. ----
-
-    private static void printTrace(String title, Order order, List<Order> pendingOrders, Decision decision)
-    {
-        PortfolioSnapshot snapshot = portfolioP1();
-        System.out.println();
-        System.out.println("=== " + title + " ===");
-        System.out.println("Order: " + describe(order));
-        if (!snapshot.isKnown(order.instrument()))
-        {
-            System.out.println("Instrument known?          no -> data check BLOCKs, no rule runs");
-            System.out.println("Decision:                  " + decision);
-            return;
-        }
-        String issuer = snapshot.issuerOf(order.instrument());
-        Money nav = snapshot.nav();
-        Money exposure = snapshot.issuerExposure(issuer);
-        printCents("NAV", nav);
-        printCents(issuer + " exposure in snapshot", exposure);
-        for (Order pending : pendingOrders)
-        {
-            String pendingIssuer = snapshot.issuerOf(pending.instrument());
-            if (!pendingIssuer.equals(issuer))
-            {
-                System.out.println("  skipped pending " + describe(pending) + " (issuer " + pendingIssuer + ")");
-                continue;
-            }
-            exposure = withOrder(exposure, pending, snapshot);
-            printCents(sign(pending) + " pending " + describe(pending),
-                snapshot.valueAtSnapshotPrice(pending.instrument(), pending.quantity()));
-        }
-        exposure = withOrder(exposure, order, snapshot);
-        printCents(sign(order) + " this order", snapshot.valueAtSnapshotPrice(order.instrument(), order.quantity()));
-        printCents("= " + issuer + " exposure after", exposure);
-        System.out.println("Comparison (no division, like Money.isAbove / isAtLeast):");
-        printNumber("  exposure x 10,000", exposure.cents() * BasisPoints.FULL);
-        printNumber("  limit   1,000 x NAV", LIMIT.value() * nav.cents());
-        printNumber("  warning   900 x NAV", WARNING.value() * nav.cents());
-        System.out.println("Decision:                  " + decision);
-    }
-
-    private static Money withOrder(Money exposure, Order order, PortfolioSnapshot snapshot)
-    {
-        Money value = snapshot.valueAtSnapshotPrice(order.instrument(), order.quantity());
-        if (order.tradeType() == TradeType.BUY)
-        {
-            return exposure.plus(value);
-        }
-        return exposure.minus(value);
-    }
-
-    private static String describe(Order order)
-    {
-        return order.tradeType() + " " + order.quantity() + " " + order.instrument();
-    }
-
-    private static String sign(Order order)
-    {
-        if (order.tradeType() == TradeType.BUY)
-        {
-            return "+";
-        }
-        return "-";
-    }
-
-    private static void printCents(String label, Money money)
-    {
-        System.out.printf(Locale.ROOT, "%-30s %,22d cents%n", label, money.cents());
-    }
-
-    private static void printNumber(String label, long number)
-    {
-        System.out.printf(Locale.ROOT, "%-30s %,22d%n", label, number);
-    }
-
-    // ---- Tests ----
-
     @Test
     void scenario1NormalBuyIsAllowed()
     {
@@ -132,7 +54,6 @@ class ComplianceEngineTest {
 
         Decision decision = engineWith(issuerRule()).check(order, portfolioP1(), List.of());
 
-        printTrace("Scenario 1: normal buy", order, List.of(), decision);
         assertThat(decision).isEqualTo(Decision.ALLOW);
     }
 
@@ -144,7 +65,6 @@ class ComplianceEngineTest {
 
         Decision decision = engineWith(issuerRule()).check(order, portfolioP1(), List.of());
 
-        printTrace("Scenario 2: exactly on the limit", order, List.of(), decision);
         assertThat(decision).isEqualTo(Decision.WARN);
     }
 
@@ -156,7 +76,6 @@ class ComplianceEngineTest {
 
         Decision decision = engineWith(issuerRule()).check(order, portfolioP1(), List.of());
 
-        printTrace("Scenario 3: one share over the limit", order, List.of(), decision);
         assertThat(decision).isEqualTo(Decision.BLOCK);
     }
 
@@ -172,8 +91,6 @@ class ComplianceEngineTest {
         Decision decisionA = engine.check(orderA, portfolioP1(), List.of());
         Decision decisionB = engine.check(orderB, portfolioP1(), List.of(orderA));
 
-        printTrace("Scenario 4, order A (nothing pending)", orderA, List.of(), decisionA);
-        printTrace("Scenario 4, order B (A is pending)", orderB, List.of(orderA), decisionB);
         assertThat(decisionA).isEqualTo(Decision.WARN);
         assertThat(decisionB).isEqualTo(Decision.BLOCK);
     }
@@ -188,7 +105,6 @@ class ComplianceEngineTest {
 
         Decision decision = engineWith(issuerRule()).check(order, portfolioP1(), List.of(pendingSell));
 
-        printTrace("Pending sell reduces the exposure", order, List.of(pendingSell), decision);
         assertThat(decision).isEqualTo(Decision.WARN);
     }
 
@@ -202,7 +118,6 @@ class ComplianceEngineTest {
 
         Decision decision = engineWith(issuerRule()).check(order, portfolioP1(), List.of(pendingOtherIssuer));
 
-        printTrace("Pending order of another issuer", order, List.of(pendingOtherIssuer), decision);
         assertThat(decision).isEqualTo(Decision.WARN);
     }
 
@@ -217,7 +132,6 @@ class ComplianceEngineTest {
 
         Decision decision = engineWith(mustNotRun).check(order, portfolioP1(), List.of());
 
-        printTrace("Scenario 7: unknown instrument", order, List.of(), decision);
         assertThat(decision).isEqualTo(Decision.BLOCK);
     }
 }

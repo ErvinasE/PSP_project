@@ -28,10 +28,10 @@ public class PortfolioRepository {
     public Optional<PortfolioSnapshot> loadSnapshot(String tenantId, String portfolioId)
     {
         // 1. The portfolio itself (cash). No row = not this tenant's portfolio.
-        List<Long> cash = jdbc.queryForList(
+        List<Long> cashRows = jdbc.queryForList(
             "SELECT cash_cents FROM portfolios WHERE tenant_id = ? AND portfolio_id = ?",
             Long.class, tenantId, portfolioId);
-        if (cash.isEmpty())
+        if (cashRows.isEmpty())
         {
             return Optional.empty();
         }
@@ -54,6 +54,17 @@ public class PortfolioRepository {
         }
 
         // 3. What this portfolio holds.
+        Map<String, Long> holdings = loadHoldings(tenantId, portfolioId);
+
+        // 4. Build the snapshot from the four things we collected
+        long cashCents = cashRows.get(0);
+        Money cashMoney = new Money(cashCents);
+        PortfolioSnapshot snapshot = new PortfolioSnapshot(instrumentIssuers, prices, holdings, cashMoney);
+        return Optional.of(snapshot);
+    }
+
+    private Map<String, Long> loadHoldings(String tenantId, String portfolioId)
+    {
         Map<String, Long> holdings = new HashMap<>();
         SqlRowSet holdingRows = jdbc.queryForRowSet(
             "SELECT instrument, quantity FROM holdings WHERE tenant_id = ? AND portfolio_id = ?",
@@ -62,7 +73,6 @@ public class PortfolioRepository {
         {
             holdings.put(holdingRows.getString("instrument"), holdingRows.getLong("quantity"));
         }
-
-        return Optional.of(new PortfolioSnapshot(instrumentIssuers, prices, holdings, new Money(cash.get(0))));
+        return holdings;
     }
 }
