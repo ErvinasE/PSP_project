@@ -14,4 +14,9 @@
         <Class name="lt.vilniustech.psp.compliance_checker.persistence.PortfolioRepository"/>
         <Bug pattern="EI_EXPOSE_REP2"/>
     </Match>
+    <!-- Same false positive as above: the injected, shared JdbcTemplate. -->
+    <Match>
+        <Class name="lt.vilniustech.psp.compliance_checker.persistence.PendingOrderRepository"/>
+        <Bug pattern="EI_EXPOSE_REP2"/>
+    </Match>
 </FindBugsFilter>
